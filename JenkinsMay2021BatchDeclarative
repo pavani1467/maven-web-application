@@ -12,10 +12,11 @@ options{
 timestamps() //to add the timestamp to the console output.
 buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5'))
 }
-
+/*
 tools{
 maven "maven3.6.3"
 }
+*/
 stages{
 stage('CheckoutCode'){
 steps{
