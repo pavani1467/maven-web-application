@@ -1,0 +1,52 @@
+pipeline
+{
+agent any
+
+triggers{
+ pollSCM('* * * * *')
+ //for githubwehhooks ->  pipelineTriggers([githubPush()])
+ //for build peroidically ->pipelineTriggers([cron('* * * * *')])
+}
+
+options{
+timestamps() //to add the timestamp to the console output.
+buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5'))
+}
+
+tools{
+maven "maven3.6.3"
+}
+stages{
+stage('CheckoutCode'){
+steps{
+git branch: 'development', credentialsId: '73a04f63-a094-43ba-a717-ec33628e7df8', url: 'https://github.com/pavani1467/maven-web-application.git'
+}
+}
+stage('Build')
+ {
+ steps{
+        sh "mvn clean package"
+ }
+}
+stage('ExecutesonarqubeReport')
+	{
+	steps{
+	sh "mvn clean sonar:sonar"
+	}
+	}
+	stage('DeployArtifactsIntoNexus')
+	{
+	steps{
+	sh "mvn deploy"
+	}
+	}
+	stage('DeployAppintoTomcatServer')
+	{
+	steps{
+	sshagent(['28f5e8e0-6876-4fdd-96b8-2e3d05811601']) {
+	sh "scp -o StrictHostKeyChecking=no target/maven-web-application.war ec2-user@3.108.219.186:/opt/apache-tomcat-9.0.46/webapps/"
+   }
+   }
+}
+}//stages closing
+}//pipeline closing
